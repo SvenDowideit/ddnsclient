@@ -9,18 +9,26 @@ import (
     "io/ioutil"
     "net/url"
     "os"
+    "strings"
 
     "net/http"
 
 )
 
+const userAgent = "https://github.com/SvenDowideit/ddnsclient DEV SvenDowideit@home.org.au"
 
-var verbose = flag.Bool("verbose", false, "Verbose output")
-var debug = flag.Bool("debug", false, "Debug output")
+var verbose = false
+var debug = false
 
+func init() {
+    flag.BoolVar(&verbose, "verbose", false, "Verbose output")
+    flag.BoolVar(&debug, "debug", false, "Debug output")
+}
 
 func RegisterDriver(name string, creator NewFunc) {
-    fmt.Printf("Registered %s\n", name)
+    if verbose {
+        fmt.Printf("Registered %s\n", name)    
+    }
     driverRegistry[name] = creator
 }
 func CreateNew(name, host, ip, login, password string) (Driver, error) {
@@ -39,8 +47,19 @@ type NewFunc func(host, ip, login, password string) (Driver, error)
 
 var driverRegistry = make(map[string]NewFunc)
 
+func ListProtocols() string {
+    keys := make([]string, len(driverRegistry))
+
+    i := 0
+    for k := range driverRegistry {
+        keys[i] = k
+        i++
+    }
+    return strings.Join(keys, ", ")
+}
+
 func CallJSON(X, cmd string, options, headers map[string]string) ([]byte, error) {
-    if *verbose {
+    if verbose {
         fmt.Println(X, ": ", cmd)
     }
     client := &http.Client{    }
@@ -55,6 +74,11 @@ func CallJSON(X, cmd string, options, headers map[string]string) ([]byte, error)
     }
     
     req, err := http.NewRequest(X, cmd, buffer)
+    if err != nil {
+        fmt.Printf("ERROR: %s\n", err)
+        return nil, err
+    }
+    req.Header.Add("User-Agent", userAgent)
 
     if headers != nil {
         for k, v := range headers {
@@ -63,7 +87,6 @@ func CallJSON(X, cmd string, options, headers map[string]string) ([]byte, error)
     }
 
 //    req.Header.Add("Content-Type", "application/json")
-
     resp, err := client.Do(req)
     if err != nil {
         fmt.Printf("ERROR: %s\n", err)
@@ -73,23 +96,22 @@ func CallJSON(X, cmd string, options, headers map[string]string) ([]byte, error)
     
     body, err := ioutil.ReadAll(resp.Body)
 
-    if *debug {
+    if debug {
         var out bytes.Buffer
         json.Indent(&out, body, "", "  ")
         out.WriteTo(os.Stdout)
     }
 
-    if *verbose {
+    if verbose {
         fmt.Printf("output: %+v\n------\n", string(body))    
     }
 
     return body, err
 }
 
-
 func Get(cmd string, options, headers map[string]string) ([]byte, error) {
     u, err := url.Parse(cmd)
-    if *verbose {
+    if verbose {
         fmt.Println("Get: ", u.String())
     }
     client := &http.Client{    }
@@ -106,6 +128,7 @@ func Get(cmd string, options, headers map[string]string) ([]byte, error) {
         fmt.Printf("ERROR: %s\n", err)
         return nil, err
     }
+    req.Header.Add("User-Agent", userAgent)
     
     if headers != nil {
         for k, v := range headers {
@@ -123,13 +146,13 @@ func Get(cmd string, options, headers map[string]string) ([]byte, error) {
     
     body, err := ioutil.ReadAll(resp.Body)
 
-    if *debug {
+    if debug {
         var out bytes.Buffer
         json.Indent(&out, body, "", "  ")
         out.WriteTo(os.Stdout)
     }
     
-    if *verbose {
+    if verbose {
         fmt.Printf("output: %+v\n------\n", string(body))    
     }
 

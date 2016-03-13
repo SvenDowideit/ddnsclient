@@ -13,7 +13,6 @@ import (
 const driverName = "cloudflare"
 
 func init() {
-    fmt.Printf("Registering %s\n", driverName)
     protocols.RegisterDriver(driverName, New)
 }
 
