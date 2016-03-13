@@ -17,8 +17,6 @@ var login = flag.String("login", "", "login to log into your account")
 var password = flag.String("password", "", "password to log into your account")
 var host = flag.String("host", "test.demo.gallery", "host to inspect / modify")
 var ip = flag.String("ip", "10.10.10.10", "IP address to set to")
-var verbose = flag.Bool("verbose", false, "Verbose output")
-var debug = flag.Bool("debug", false, "Debug output")
 
 func main() {
     flag.Parse()
@@ -30,7 +28,7 @@ func main() {
     
 
     fmt.Printf("Set %s to %s\n", *host, *ip)
-    c, err := protocols.CreateNew("cloudflare", *host, *ip, *login, *password, *verbose, *debug)
+    c, err := protocols.CreateNew("cloudflare", *host, *ip, *login, *password)
     if err != nil {
         fmt.Println("ERROR: ", err)
         return

@@ -2,13 +2,8 @@
 package cloudflare
 
 import (
-    "bytes"
     "fmt"
     "encoding/json"
-    "io/ioutil"
-    "net/http"
-    "net/url"
-    "os"
     "strings"
     
     "github.com/SvenDowideit/ddnsclient/protocols"
@@ -22,14 +17,12 @@ func init() {
     protocols.RegisterDriver(driverName, New)
 }
 
-func New(host, ip, login, password string, verbose, debug bool) (protocols.Driver, error) {
+func New(host, ip, login, password string) (protocols.Driver, error) {
     c := Cloudflare{
         host:host,
         ip:ip, 
         login:login,
         password:password,
-        verbose:verbose,
-        debug:debug,
         
         apiUrl: "https://api.cloudflare.com/client/v4",
         
@@ -44,9 +37,7 @@ func New(host, ip, login, password string, verbose, debug bool) (protocols.Drive
 
 type Cloudflare struct {
     host, ip, login, password string
-    
-    verbose, debug bool
-    
+        
     apiUrl string
     headers map[string]string
 }
@@ -59,7 +50,7 @@ func (c Cloudflare) Set() {
     }
 
     //Get list of existing records
-    resp, err := get(c.apiUrl+"/zones/"+zoneID+"/dns_records", nil, c.headers, c.verbose, c.debug)
+    resp, err := get(c.apiUrl+"/zones/"+zoneID+"/dns_records", nil, c.headers)
     if err != nil {
         fmt.Println("ERROR: ", err)
     }
@@ -79,7 +70,7 @@ func (c Cloudflare) Set() {
             "name": c.host,
             "content": c.ip,
             "ttl": "120",
-        }, c.headers, c.verbose, c.debug)
+        }, c.headers)
     } else {
         // modify entry
         _, err = callJSON("PUT", c.apiUrl+"/zones/"+zoneID+"/dns_records/"+recordID, map[string]string{
@@ -87,11 +78,11 @@ func (c Cloudflare) Set() {
             "name": c.host,
             "content": c.ip,
             "ttl": "120",
-        }, c.headers, c.verbose, c.debug)        
+        }, c.headers)        
     }
 
     //Get list of existing records
-    get(c.apiUrl+"/zones/"+zoneID+"/dns_records", nil, c.headers, c.verbose, c.debug)
+    get(c.apiUrl+"/zones/"+zoneID+"/dns_records", nil, c.headers)
 
     fmt.Printf("Set %s to %s\n", c.host, c.ip)
     for _, v := range resp.Result {
@@ -120,122 +111,44 @@ func (c Cloudflare) getZoneID() string {
 func (c Cloudflare) getZones() (ResponseStruct, error) {
     var response ResponseStruct
 
-    if c.verbose {
-        fmt.Println("testGet: /zones")
-    }
-    response, err := get(c.apiUrl+"/zones", nil, c.headers, c.verbose, c.debug)
+//    if protocols.verbose {
+//        fmt.Println("testGet: /zones")
+//    }
+    response, err := get(c.apiUrl+"/zones", nil, c.headers)
     if err != nil {
         return response, err
     }
 
-    if c.verbose {
-        fmt.Println("Unmarshaled as")
-        fmt.Printf("%+v\n", response)
-    }
+//    if protocols.verbose {
+//        fmt.Println("Unmarshaled as")
+//        fmt.Printf("%+v\n", response)
+//    }
 
     // TODO: find the matching result
     return response, nil
 }
 
-func callJSON(X, cmd string, options, headers map[string]string, verbose, debug bool) (ResponseStruct, error) {
-    var response ResponseStruct
-
-    if verbose {
-        fmt.Println(X, ": ", cmd)
-    }
-    client := &http.Client{    }
-
-    var buffer *bytes.Buffer
-    if options != nil {
-        buffer = new(bytes.Buffer)
-        err := json.NewEncoder(buffer).Encode(options)
-        if err != nil {
-            return response, err
-        }
-    }
+func callJSON(X, cmd string, options, headers map[string]string) (ResponseStruct, error) {
+    body, err := protocols.CallJSON(X, cmd, options, headers)
     
-    req, err := http.NewRequest(X, cmd, buffer)
-
-    if headers != nil {
-        for k, v := range headers {
-            req.Header.Add(k, v)
-        }
-    }
-
-//    req.Header.Add("Content-Type", "application/json")
-
-    resp, err := client.Do(req)
+    var response ResponseStruct
     if err != nil {
-        fmt.Printf("ERROR: %s\n", err)
         return response, err
     }
-    defer resp.Body.Close()
-    
-    body, err := ioutil.ReadAll(resp.Body)
-
-    if debug {
-        var out bytes.Buffer
-        json.Indent(&out, body, "", "  ")
-        out.WriteTo(os.Stdout)
-    }
-
-    if verbose {
-        fmt.Printf("output: %+v\n------\n", string(body))    
-    }
-
-	err = json.Unmarshal(body, &response)
+    err = json.Unmarshal(body, &response)
     if err != nil {
         return response, err
     }
     return response, err
 }
-
-
-func get(cmd string, options, headers map[string]string, verbose, debug bool) (ResponseStruct, error) {
-    u, err := url.Parse(cmd)
-    if verbose {
-        fmt.Println("Get: ", u.String())
-    }
-    client := &http.Client{    }
-    
-    if options != nil {
-        params := url.Values{}
-        for k, v := range options {
-            params.Add(k, v)
-        }
-        u.RawQuery = params.Encode()
-    }
-    req, err := http.NewRequest("GET", u.String(), nil)
-
-    if headers != nil {
-        for k, v := range headers {
-            req.Header.Add(k, v)
-        }
-    }
-    req.Header.Add("Content-Type", "application/json")
+func get(cmd string, options, headers map[string]string) (ResponseStruct, error) {
+    body, err := protocols.Get(cmd, options, headers)
 
     var response ResponseStruct
-
-    resp, err := client.Do(req)
     if err != nil {
-        fmt.Printf("ERROR: %s\n", err)
         return response, err
     }
-    defer resp.Body.Close()
-    
-    body, err := ioutil.ReadAll(resp.Body)
-
-    if debug {
-        var out bytes.Buffer
-        json.Indent(&out, body, "", "  ")
-        out.WriteTo(os.Stdout)
-    }
-    
-    if verbose {
-        fmt.Printf("output: %+v\n------\n", string(body))    
-    }
-
-	err = json.Unmarshal(body, &response)
+    err = json.Unmarshal(body, &response)
     if err != nil {
         return response, err
     }
