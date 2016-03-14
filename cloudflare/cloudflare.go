@@ -12,6 +12,8 @@ import (
 // TODO: can I get the package name for this?
 const driverName = "cloudflare"
 
+// see https://api.cloudflare.com/#dns-records-for-a-zone-create-dns-record
+
 func init() {
     protocols.RegisterDriver(driverName, New)
 }

@@ -9,6 +9,7 @@ import (
 
     // import all the protocol drivers
     _ "github.com/SvenDowideit/ddnsclient/cloudflare"
+    _ "github.com/SvenDowideit/ddnsclient/dreamhost"
     _ "github.com/SvenDowideit/ddnsclient/noip"
 )
 
