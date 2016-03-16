@@ -6,7 +6,7 @@ ENTRYPOINT ["/go/src/github.com/SvenDowideit/ddnsclient/ddnsclient"]
 CMD ["-help"]
 
 # pre-install known dependencies before the source, so we don't redownload them whenever the source changes
-#RUN go get github.com/stretchr/testify/assert
+RUN go get github.com/vharitonsky/iniflags
 
 WORKDIR /go/src/github.com/SvenDowideit/ddnsclient
 COPY . /go/src/github.com/SvenDowideit/ddnsclient

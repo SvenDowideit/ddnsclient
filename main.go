@@ -4,6 +4,9 @@ import (
 	"flag"
 	"fmt"
 
+	// import flags from ini file
+	"github.com/vharitonsky/iniflags"
+
 	"github.com/SvenDowideit/ddnsclient/protocols"
 
 	// import all the protocol drivers
@@ -23,7 +26,7 @@ var protocol = flag.String("protocol", "",
 	fmt.Sprintf("DDNS service providor\n\tone of: %s\n", protocols.ListProtocols()))
 
 func main() {
-	flag.Parse()
+	iniflags.Parse()
 
 	if *help {
 		flag.PrintDefaults()

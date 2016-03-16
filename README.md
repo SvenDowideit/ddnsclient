@@ -18,3 +18,19 @@ ddnsclient  -debug -verbose \
     -login=someone@gmail.com -password=something
     -ip 66.66.66.88
 ```
+
+OR you can set the values in a config file:
+
+`ddnsclient -config ddnsclient.ini`
+
+using `ddnsclient.ini`:
+
+```
+# docker run --rm -it -v $(pwd)/ddnsclient.ini:/etc/ddnsclient.ini ddnsclient -config=/etc/ddnsclient.i
+ni
+host=baloo.demo.gallery
+protocol=cloudflare
+login=svendowideit@demo.gallery
+password=<API token>
+ip=66.66.66.77
+```
