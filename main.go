@@ -14,19 +14,19 @@ import (
 
 var help = flag.Bool("help", false, "Show Help")
 
-var protocol = flag.String("protocol", "", "DDNS service providor")
-
 var login = flag.String("login", "", "login to log into your account")
 var password = flag.String("password", "", "password to log into your account")
 var host = flag.String("host", "test.demo.gallery", "host to inspect / modify")
 var ip = flag.String("ip", "10.10.10.10", "IP address to set to")
+
+var protocol = flag.String("protocol", "",
+	fmt.Sprintf("DDNS service providor\n\tone of: %s\n", protocols.ListProtocols()))
 
 func main() {
 	flag.Parse()
 
 	if *help {
 		flag.PrintDefaults()
-		fmt.Println("Supported drivers: ", protocols.ListProtocols())
 		return
 	}
 
@@ -34,7 +34,6 @@ func main() {
 	c, err := protocols.CreateNew(*protocol, *host, *ip, *login, *password)
 	if err != nil {
 		fmt.Println("ERROR: ", err)
-		fmt.Println("Supported drivers: ", protocols.ListProtocols())
 		return
 	}
 	c.Set()

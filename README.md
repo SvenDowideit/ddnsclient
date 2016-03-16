@@ -13,5 +13,8 @@ Currently supports:
   Its still useful for adding a new `A` record :)
 
 ```
-ddnsclient -protocol noip -host something.ddns.net -login=someone@gmail.com -password=something -ip 66.66.66.88 -debug -verbose
+ddnsclient  -debug -verbose \
+    -protocol noip -host something.ddns.net \
+    -login=someone@gmail.com -password=something
+    -ip 66.66.66.88
 ```
