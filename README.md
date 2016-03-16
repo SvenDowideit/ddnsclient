@@ -21,7 +21,12 @@ ddnsclient  -debug -verbose \
 
 OR you can set the values in a config file:
 
-`ddnsclient -config ddnsclient.ini`
+```
+$ ddnsclient -config ddnsclient.ini -ip=22.33.44.55
+Set baloo.demo.gallery to 22.33.44.55
+Currently set baloo.demo.gallery to 66.66.66.77
+Set baloo.demo.gallery to 22.33.44.55
+```
 
 using `ddnsclient.ini`:
 
