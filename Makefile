@@ -35,8 +35,7 @@ endif
 
 checkout-tag:
 	git fetch --all
-	git checkout -b $(VERSION) origin/$(VERSION) || git checkout $(VERSION)
-	git reset --hard  origin/$(VERSION)
+	git checkout -b $(VERSION)
 
 create-github-release:
 	echo "Creating the $(VERSION) release using tag"
