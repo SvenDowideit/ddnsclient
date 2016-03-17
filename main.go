@@ -16,6 +16,8 @@ import (
 )
 
 var help = flag.Bool("help", false, "Show Help")
+var version = flag.Bool("help", false, "Show Version")
+var versionString = "Development build"
 
 var login = flag.String("login", "", "login to log into your account")
 var password = flag.String("password", "", "password to log into your account")
@@ -28,7 +30,12 @@ var protocol = flag.String("protocol", "",
 func main() {
 	iniflags.Parse()
 
+	if *version {
+		fmt.Printf("ddnscient %s\n", versionString)
+		return
+	}
 	if *help {
+		fmt.Printf("ddnscient %s\n\n", versionString)
 		flag.PrintDefaults()
 		return
 	}
