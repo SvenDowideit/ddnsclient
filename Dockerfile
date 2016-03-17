@@ -15,7 +15,8 @@ COPY . /go/src/github.com/SvenDowideit/ddnsclient
 #RUN go install github.com/SvenDowideit/ddnsclient
 
 #RUN go get -d -v
-RUN go build -o ddnsclient main.go
+ARG VERSION
+RUN go build -v -ldflags "-X main.VersionString=$VERSION" -o ddnsclient main.go
 #RUN go test github.com/SvenDowideit/ddnsclient/...
 
 
